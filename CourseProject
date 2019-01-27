@@ -4,6 +4,8 @@ library(rpart)
 library(rpart.plot)
 library(rattle)
 library(randomForest)
+library(RColorBrewer)
+library(knitr)
 
 # The  two csv data sets need to be loaded into R
 trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
@@ -35,9 +37,9 @@ TrainingData <- TrainingData[,nzv$nzv==FALSE]
 
 #we can see that a couple of variables could be removed with this process, by using once again the dim function 
 dim(TrainingData)
-[1] 11776   130
+##[1] 11776   130
 dim(TestData)
-[1] 7846  132
+##[1] 7846  132
 
 #Remove the first column of the TrainigData
 TrainingData1 <- TrainingData[c(-1)]
@@ -47,11 +49,87 @@ noNA <- which((colSums(!is.na(TrainingData1)) >= 0.6*nrow(TrainingData1)))
 TrainingData <- TrainingData1[,noNA]
 TestData <- TestData[,noNA]
 
-dim(TrainigData)
-[1] 11776    58
+dim(TrainingData)
+##[1] 11776    58
 dim(TestData)
-[1] 7846   58
+##[1] 7846   58
 #Now there are only 58 variables left in both data sets
+
+##Making a Decision Tree
+set.seed(1112)
+modFit1 <- rpart(classe ~ ., data=TrainingData, method="class")
+fancyRpartPlot(modFit1)
+
+#After I made the decision tree, I will use a confusion matrix to get a summary of the statistics
+predictions1 <- predict(modFit1, TestData, method = "class")
+conMatrix <- confusionMatrix(predictions1, TestData$classe)
+conMatrix
+##Outcome confusionMatrix
+##Confusion Matrix and Statistics
+##
+##          Reference
+##Prediction    A    B    C    D    E
+##         A 2150   60    7    1    0
+##         B   61 1260   69   64    0
+##         C   21  188 1269  143    4
+##         D    0   10   14  857   78
+##         E    0    0    9  221 1360
+##
+##Overall Statistics
+##                                          
+##               Accuracy : 0.8789          
+##                 95% CI : (0.8715, 0.8861)
+##    No Information Rate : 0.2845          
+##    P-Value [Acc > NIR] : < 2.2e-16       
+##                                          
+##                  Kappa : 0.8468          
+## Mcnemar's Test P-Value : NA     
+ 
+ #After having analysed the accuracy of the decision tree, the same will have to be done for Boosting
+ 
+ 
+ 
+ 
+ #Finally, also Random Forest will be analysed
+ modFit3 <- train(classe ~ .,data = TrainingData, method = "rf", prox = TRUE)
+ prediction3 <- predict(modFit3, TestData, type = "class")
+ conMatrix3 <- confusionMatrix(prediction3, TestData$classe)
+ conMatrix3
+ ##Outcome ConfusionMatrix3
+ ##Confusion Matrix and Statistics
+##
+##          Reference
+##Prediction    A    B    C    D    E
+##         A 2232    2    0    0    0
+##         B    0 1516    4    0    0
+##         C    0    0 1364    6    0
+##         D    0    0    0 1277    2
+##         E    0    0    0    3 1440
+##
+##Overall Statistics
+##                                          
+##               Accuracy : 0.9978          
+##                 95% CI : (0.9965, 0.9987)
+##    No Information Rate : 0.2845          
+##    P-Value [Acc > NIR] : < 2.2e-16       
+##                                          
+##                  Kappa : 0.9973          
+## Mcnemar's Test P-Value : NA              
+##
+##Statistics by Class:
+##
+##                     Class: A Class: B Class: C Class: D Class: E
+##Sensitivity            1.0000   0.9987   0.9971   0.9930   0.9986
+##Specificity            0.9996   0.9994   0.9991   0.9997   0.9995
+##Pos Pred Value         0.9991   0.9974   0.9956   0.9984   0.9979
+##Neg Pred Value         1.0000   0.9997   0.9994   0.9986   0.9997
+##Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+##Detection Rate         0.2845   0.1932   0.1738   0.1628   0.1835
+##Detection Prevalence   0.2847   0.1937   0.1746   0.1630   0.1839
+##Balanced Accuracy      0.9998   0.9990   0.9981   0.9963   0.9991
+
+ ## Random Forest has an accuracy of 99,78% which is pretty good. Therefore, this algorithm will be chosen.
+
 
 
 
