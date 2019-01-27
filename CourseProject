@@ -1,0 +1,71 @@
+#Two correctly analyse the data, the mandatory libraries need to be loaded in R
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(rattle)
+library(randomForest)
+
+# The  two csv data sets need to be loaded into R
+trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+training <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))
+testing <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
+
+#Then the data needs to be seperated into training and test data; in this case 60% will be allocated 
+#to the training set and the other 40% to the test set
+inTrain <- createDataPartition (training$classe, p = 0.6, list = FALSE)
+TrainingData <- training[inTrain, ]
+TestData <- training[-inTrain, ]
+
+#Now we can look at the training and test data by using the dim function
+dim(TrainingData)
+[1] 11776   160
+dim(TestData)
+[1] 7846  160
+
+str(TrainingData)
+# we can see that the data set has 160 different variables
+
+#First we will clean the Data by removing near Zero Variables for both the test and training data
+nzv<- nearZeroVar(TestData, saveMetrics=TRUE)
+TestData <- TestData [,nzv$nzv==FALSE]
+nzv <- nearZeroVar(TrainingData, saveMetrics = TRUE)
+TrainingData <- TrainingData[,nzv$nzv==FALSE]
+
+#we can see that a couple of variables could be removed with this process, by using once again the dim function 
+dim(TrainingData)
+[1] 11776   130
+dim(TestData)
+[1] 7846  132
+
+#Remove the first column of the TrainigData
+TrainingData1 <- TrainingData[c(-1)]
+
+#Because there are a lot of NA values in the Data sets, all the variables with at least 60 per cent of NA's should be removed
+noNA <- which((colSums(!is.na(TrainingData1)) >= 0.6*nrow(TrainingData1)))
+TrainingData <- TrainingData1[,noNA]
+TestData <- TestData[,noNA]
+
+dim(TrainigData)
+[1] 11776    58
+dim(TestData)
+[1] 7846   58
+#Now there are only 58 variables left in both data sets
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
